@@ -69,7 +69,6 @@ export default class WebGLViewer {
 
   update() {
     const delta = this.clock?.getDelta();
-
     if (this.particles) this.particles.update(delta || 0);
   }
 

@@ -3,11 +3,12 @@ import WebGLViewer from './webgl/viewer';
 
 export default class Engine {
 
+  private engineEl: HTMLElement
   private webgl?: WebGLViewer
   private raf?: number
 
-  constructor() {
-
+  constructor(el?: string | HTMLElement) {
+    this.engineEl = el ? (typeof el === "string" ? document.querySelector(el) || document.body : el) : document.body
   }
 
   init() {
@@ -20,7 +21,7 @@ export default class Engine {
 
   initWebGL() {
     this.webgl = new WebGLViewer(this);
-    if (this.webgl.renderer) document.body.appendChild(this.webgl.renderer.domElement);
+    if (this.webgl.renderer) this.engineEl.appendChild(this.webgl.renderer.domElement);
   }
 
   initGUI() {

@@ -24,6 +24,7 @@ export default class Particles {
 		this.container = new THREE.Object3D();
 	}
 
+	// 加载图片纹理
 	init(src: string) {
 		const loader = new THREE.TextureLoader();
 
@@ -185,7 +186,7 @@ export default class Particles {
 		if (this.shaderMaterial) this.shaderMaterial.uniforms.uTime.value += delta;
 	}
 
-	show(time = 1.0) {
+	show(time = 1) {
 		// reset
 		if (!this.shaderMaterial) return;
 		gsap.fromTo(this.shaderMaterial.uniforms.uSize, { value: 0.5 }, { value: 1., duration: time });
@@ -202,12 +203,13 @@ export default class Particles {
 			}
 			gsap.to(this.shaderMaterial.uniforms.uRandom, {
 				duration: time,
-				value: 5.0, onComplete: () => {
+				value: 5.0,
+				onComplete: () => {
 					if (_destroy) this.destroy();
 					resolve(true);
 				}
 			});
-			gsap.to(this.shaderMaterial.uniforms.uDepth, { value: -20.0, ease:"power2.in", duration: time });
+			gsap.to(this.shaderMaterial.uniforms.uDepth, { value: -20.0, ease: "power2.in", duration: time });
 			gsap.to(this.shaderMaterial.uniforms.uSize, { value: 0.0, duration: time * 0.8 });
 			this.removeListeners();
 		});
