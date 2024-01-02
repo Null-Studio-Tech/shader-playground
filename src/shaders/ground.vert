@@ -2,10 +2,11 @@ precision highp float;
 
 attribute float pindex;
 attribute float a_size;
+attribute float angle;
 
 varying vec3 v_position;
+varying float radius;
 
-// attribute float angle;
 uniform float uTotal;
 uniform float uTime;
 // uniform float uRandom;
@@ -81,6 +82,21 @@ float random(float n) {
   return fract(sin(n) * 43758.5453123);
 }
 
+float PHI = 1.61803398874989484820459;  // Φ = Golden Ratio   
+
+float gold_noise(in vec2 xy, in float seed) {
+  return fract(tan(distance(xy * PHI, xy) * seed) * xy.x);
+}
+
+float mod_index(float a, float b) {
+  return a - b * (a / b);
+}
+
+float plot(float st, float pct){
+  return  smoothstep( pct-0.02, pct, st) -
+          smoothstep( pct, pct+0.02, st);
+}
+
 void main() {
 
   v_position = position;
@@ -89,10 +105,15 @@ void main() {
 	// // randomise
 	// displaced.xy += vec2(random(pindex) - 0.5, random(offset.x + pindex) - 0.5) * uRandom;
   // float rndz = 0.1 * snoise(vec2(position.x, position.y)) * uTime;
-  float rndz = 0.1 * snoise(vec2(position.x * position.y, uTime * 0.1));
+  float rndz = gold_noise(position.xy, uTime);
+  float psize = snoise(vec2(uTime, position.x * position.y) * 0.5) * 0.01;
+
+  float distance = length(v_position.xy);
+  float high = plot(distance,0.1);
+  v_position.z += high;
   // float tmp = random(pindex) * 2.0 * 2.0;
   // rndz *= tmp;
-  displaced.z += rndz;
+  // displaced.z += rndz;
 	// // center
 	// displaced.xy -= uTextureSize * 0.5;
   // rndz *= 0.5;
@@ -112,6 +133,10 @@ void main() {
 	// mvPosition.xyz += position * psize;
 	// vec4 finalPosition = projectionMatrix * mvPosition;
 
-  gl_PointSize = 1.0 + 5.0 * rndz;
-  gl_Position = projectionMatrix * modelViewMatrix * vec4(displaced, 1.0);
+  // gl_PointSize = 1.0 + 5.0 * rndz;
+  gl_PointSize = 4.0;
+  radius = 0.1 + rndz * 0.3;
+  // v_position.z += 0.1 * sin(uTime * angle);
+  vec4 finalPosition = modelViewMatrix * vec4(v_position, 1.0);
+  gl_Position = projectionMatrix * finalPosition;
 }

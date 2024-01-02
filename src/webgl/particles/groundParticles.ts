@@ -59,7 +59,6 @@ export default class GroundParticles {
 		// geometry.setAttribute("positions", groundGeometry.attributes.positions);
 		// geometry.setAttribute("index", groundGeometry.getAttribute("index"));
 		// geometry.attributes = groundGeometry.attributes;
-		debugger;
 
 		this.object3D = new THREE.Mesh(geometry, this.shaderMaterial);
 		this.container.add(this.object3D);

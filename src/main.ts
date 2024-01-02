@@ -2,6 +2,8 @@ import './style.css';
 import * as THREE from 'three';
 import VertexShader from './shaders/ground.vert';
 import FragmentShader from './shaders/ground.frag';
+import SkyVertexShader from './shaders/sky.vert';
+import SkyFragmentShader from './shaders/sky.frag';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 const renderConfig = {
@@ -35,28 +37,70 @@ const createCamera = (camera?: THREE.PerspectiveCamera) => {
   return _camera;
 }
 
-
-const init = () => {
-  const renderer = createRender();
-  document.body.appendChild(renderer.domElement);
-  const scene = createScene();
-  const camera = createCamera();
-  const width = 20;
-  const height = 20;
+const createGroundParticle: () => [THREE.Points, THREE.ShaderMaterial] = () => {
+  const width = 50;
+  const height = 50;
   const groundGeometry = new THREE.PlaneGeometry(1, 1, width, height);
   const particleGeometry = new THREE.BufferGeometry();
-  const clock = new THREE.Clock();
+
 
   const total = groundGeometry.getAttribute("position").count;
   const indices = new Uint16Array(total);
-  const offsets = new Float32Array(total * 3);
+  // const offsets = new Float32Array(total * 3);
+  const size = new Float32Array(total);
+  const angles = new Float32Array(total);
+
+  for (let i = 0, j = 0; i < total; i++) {
+    size[i] = i;
+    // offsets[j * 3 + 0] = i % width;
+    // offsets[j * 3 + 1] = Math.floor(i / width);
+
+    indices[j] = i;
+
+    angles[j] = j * Math.PI * 2 / total;
+
+    j++;
+  }
+
+  particleGeometry.setAttribute('pindex', new THREE.BufferAttribute(indices, 1, false));
+  // particleGeometry.setAttribute('offset', new THREE.BufferAttribute(offsets, 3, false));
+  particleGeometry.setAttribute('position', new THREE.BufferAttribute(groundGeometry.getAttribute("position").array, 3));
+  particleGeometry.setAttribute('a_size', new THREE.BufferAttribute(size, 1));
+  particleGeometry.setAttribute('angle', new THREE.BufferAttribute(angles, 1));
+  // particleGeometry.setAttribute('index', groundGeometry.getAttribute("index"));
+  // particleGeometry.setAttribute('uv', new THREE.BufferAttribute(groundGeometry.getAttribute("uv").array, 1));
+
+  const particleMaterial = new THREE.ShaderMaterial({
+    uniforms: {
+      'uTotal': { value: total },
+      'uTime': { value: 0 }
+    },
+    vertexShader: VertexShader,
+    fragmentShader: FragmentShader,
+    depthTest: false,
+    transparent: true,
+    wireframe: false
+  })
+  return [new THREE.Points(particleGeometry, particleMaterial), particleMaterial];
+}
+
+
+const createSkyParticle: (radius: number) => [THREE.Points, THREE.ShaderMaterial] = (radius: number = 0.5) => {
+  const width = 50;
+  const height = 50;
+  const skyGeometry = new THREE.SphereGeometry(radius, width, height);
+  const particleGeometry = new THREE.BufferGeometry();
+
+  const total = skyGeometry.getAttribute("position").count;
+  const indices = new Uint16Array(total);
+  // const offsets = new Float32Array(total * 3);
   const size = new Float32Array(total);
   // const angles = new Float32Array(numVisible);
 
   for (let i = 0, j = 0; i < total; i++) {
     size[i] = i;
-    offsets[j * 3 + 0] = i % width;
-    offsets[j * 3 + 1] = Math.floor(i / width);
+    // offsets[j * 3 + 0] = i % width;
+    // offsets[j * 3 + 1] = Math.floor(i / width);
 
     indices[j] = i;
 
@@ -66,30 +110,45 @@ const init = () => {
   }
 
   particleGeometry.setAttribute('pindex', new THREE.BufferAttribute(indices, 1, false));
-  // particleGeometry.setAttribute('offset', new THREE.BufferAttribute(offsets, 3, false));
-  particleGeometry.setAttribute('position', new THREE.BufferAttribute(groundGeometry.getAttribute("position").array, 3));
+  particleGeometry.setAttribute('position', new THREE.BufferAttribute(skyGeometry.getAttribute("position").array, 3));
   particleGeometry.setAttribute('a_size', new THREE.BufferAttribute(size, 1));
-  // particleGeometry.setAttribute('index', groundGeometry.getAttribute("index"));
-  // particleGeometry.setAttribute('uv', new THREE.BufferAttribute(groundGeometry.getAttribute("uv").array, 1));
-
-  const pointMaterial = new THREE.PointsMaterial({ color: 0xffffff, size: 1 });
 
   const particleMaterial = new THREE.ShaderMaterial({
     uniforms: {
       'uTotal': { value: total },
-      'uTime': { value: clock.getDelta() }
+      'uTime': { value: 0 }
     },
-    vertexShader: VertexShader,
-    fragmentShader: FragmentShader,
+    vertexShader: SkyVertexShader,
+    fragmentShader: SkyFragmentShader,
+    depthTest: false,
+    transparent: true,
     wireframe: false
   })
-  const groundMesh = new THREE.Points(particleGeometry, particleMaterial);
-  groundMesh.position.set(0, 0, 0);
+  return [new THREE.Points(particleGeometry, particleMaterial), particleMaterial];
+}
+
+
+const init = () => {
+  const renderer = createRender();
+  document.body.appendChild(renderer.domElement);
+  const scene = createScene();
+  const camera = createCamera();
+  const clock = new THREE.Clock();
+
+  const [groundParticles, groundMaterial] = createGroundParticle();
+  scene.add(groundParticles);
+  groundParticles.position.set(0, 0, 0 - 0.5);
+  const [outerSkyParticles, outerSkyMaterial] = createSkyParticle(0.5);
+  scene.add(outerSkyParticles);
+  outerSkyParticles.position.set(0, 0, 0.7 - 0.5);
+  const [innerSkyParticles, innerSkyMaterial] = createSkyParticle(0.4);
+  scene.add(innerSkyParticles);
+  innerSkyParticles.position.set(0, 0, 0.7 - 0.5);
   camera.position.setX(0);
-  camera.position.setZ(2);
-  camera.position.setY(0);
-  // camera.lookAt(0, 0, 0);
-  scene.add(groundMesh);
+  camera.position.setZ(0);
+  camera.position.setY(-5);
+  camera.lookAt(0, 0, 0);
+
 
   const control = new OrbitControls(camera, renderer.domElement);
   control.addEventListener('change', () => {
@@ -99,7 +158,10 @@ const init = () => {
   renderer.render(scene, camera);
 
   const animate = () => {
-    particleMaterial.uniforms.uTime.value += clock.getDelta();
+    const delta = clock.getDelta()
+    groundMaterial.uniforms.uTime.value += delta;
+    outerSkyMaterial.uniforms.uTime.value += delta;
+    innerSkyMaterial.uniforms.uTime.value += delta;
     renderer.render(scene, camera);
     requestAnimationFrame(animate)
   }
