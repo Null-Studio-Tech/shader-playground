@@ -15,9 +15,10 @@ export default class Particles {
 	private touch?: TouchTexture
 	private hitArea?: THREE.Mesh
 	private shaderMaterial?: THREE.RawShaderMaterial
+	private object3D?: THREE.Mesh
 
 	public container: THREE.Object3D
-	public object3D?: THREE.Mesh
+
 
 	constructor(webgl: WebGLViewer) {
 		this.webgl = webgl;
@@ -96,6 +97,7 @@ export default class Particles {
 			fragmentShader: FragmentShader,
 			depthTest: false,
 			transparent: true,
+			// wireframe:true
 			// blending: THREE.AdditiveBlending
 		});
 
@@ -148,8 +150,8 @@ export default class Particles {
 
 	initTouch() {
 		// create only once
-		if (!this.touch) this.touch = new TouchTexture(this);
-		if (this.object3D) (this.object3D.material as THREE.ShaderMaterial).uniforms.uTouch.value = this.touch.texture;
+		if (!this.touch) this.touch = new TouchTexture();
+		if (this.shaderMaterial) this.shaderMaterial.uniforms.uTouch.value = this.touch.texture;
 	}
 
 	initHitArea() {
@@ -157,7 +159,7 @@ export default class Particles {
 		const material = new THREE.MeshBasicMaterial({ color: 0xFFFFFF, wireframe: true, depthTest: false });
 		material.visible = false;
 		this.hitArea = new THREE.Mesh(geometry, material);
-		this.container.add(this.hitArea);
+		// this.container.add(this.hitArea);
 	}
 
 	addListeners() {

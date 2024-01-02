@@ -1,5 +1,6 @@
 precision highp float;
 
+// 图片形成的映射
 uniform sampler2D uTexture;
 
 varying vec2 vPUv;

@@ -40,7 +40,7 @@ export default class Engine {
     if (this.webgl?.renderer) {
       const el = this.webgl.renderer.domElement;
       el.addEventListener('click', () => {
-        this.webgl?.next();
+        // this.webgl?.next();
       });
     }
 

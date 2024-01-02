@@ -1,7 +1,7 @@
 import * as THREE from 'three';
 
 import { easeOutQuad, easeInOutQuad, easeOutSine, easeInOutSine } from '../../utils/easing.utils';
-import type Particles from './Particles';
+// import type Particles from './Particles';
 
 export interface TouchPointer {
 	x: number, y: number, age: number, force: number
@@ -9,7 +9,7 @@ export interface TouchPointer {
 
 export default class TouchTexture {
 
-	private parent: Particles
+	// private parent: Particles
 	private canvas?: HTMLCanvasElement
 	private ctx: CanvasRenderingContext2D | null = null
 	private size: number
@@ -19,8 +19,8 @@ export default class TouchTexture {
 
 	public texture?: THREE.Texture
 
-	constructor(parent: Particles) {
-		this.parent = parent;
+	constructor() {
+		// this.parent = parent;
 		this.size = 64;
 		this.maxAge = 120;
 		this.radius = 0.15;
@@ -34,7 +34,7 @@ export default class TouchTexture {
 		this.canvas.width = this.canvas.height = this.size;
 		this.ctx = this.canvas.getContext('2d');
 		if (!this.ctx) return;
-		this.ctx.fillStyle = 'black';
+		this.ctx.fillStyle = '#2244FF';
 		this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
 
 		this.texture = new THREE.Texture(this.canvas);
@@ -99,7 +99,7 @@ export default class TouchTexture {
 
 		const radius = this.size * this.radius * intensity;
 		const grd = this.ctx.createRadialGradient(pos.x, pos.y, radius * 0.25, pos.x, pos.y, radius);
-		grd.addColorStop(0, `rgba(255, 255, 255, 0.2)`);
+		grd.addColorStop(0, `rgba(255, 0, 255, 1)`);
 		grd.addColorStop(1, 'rgba(0, 0, 0, 0.0)');
 
 		this.ctx.beginPath();

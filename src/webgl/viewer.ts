@@ -1,8 +1,9 @@
 import * as THREE from 'three';
 import InteractiveControls from './controls/InteractiveControls';
-import Particles from './particles/Particles';
+// import Particles from './particles/Particles';
+import Particles from './particles/groundParticles';
 import type Engine from '../engine';
-
+import { OrbitControls } from 'three/examples/jsm/Addons.js';
 
 export default class WebGLViewer {
 
@@ -13,6 +14,7 @@ export default class WebGLViewer {
   private currSample: number | null = null
 
   public renderer?: THREE.WebGLRenderer
+  public control?: OrbitControls
   public interactive?: InteractiveControls
   public particles?: Particles
   public samples: Array<string> = []
@@ -50,6 +52,12 @@ export default class WebGLViewer {
 
     // clock
     this.clock = new THREE.Clock(true);
+
+    this.control = new OrbitControls(this.camera, this.renderer.domElement);
+    this.control.addEventListener('change', () => {
+      if (this.scene && this.camera) this.renderer?.render(this.scene, this.camera)
+    })
+    
   }
 
   initControls() {
@@ -59,6 +67,7 @@ export default class WebGLViewer {
   }
 
   initParticles() {
+    debugger;
     this.particles = new Particles(this);
     this.scene?.add(this.particles.container);
   }
@@ -81,14 +90,15 @@ export default class WebGLViewer {
 
 
   goto(index: number) {
-    // init next
-    if (this.currSample == null) this.particles?.init(this.samples[index]);
-    // hide curr then init next
-    else {
-      this.particles?.hide(true).then(() => {
-        this.particles?.init(this.samples[index]);
-      });
-    }
+    this.particles?.init();
+    // // init next
+    // if (this.currSample == null) this.particles?.init(this.samples[index]);
+    // // hide curr then init next
+    // else {
+    //   this.particles?.hide(true).then(() => {
+    //     this.particles?.init(this.samples[index]);
+    //   });
+    // }
 
     this.currSample = index;
   }
