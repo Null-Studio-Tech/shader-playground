@@ -8,7 +8,7 @@ void main() {
   float distance = length(coords);
 
   vec4 color_white = vec4(1.0, 1.0, 1.0, 1.0);
-  vec4 color_green = vec4(0.0, 1.0, 0.0, 1.0);
+  vec4 color_green = vec4(0.0, 1.0, 1.0, 1.0);
 
   // gl_FragColor = color_white;
 
