@@ -52,7 +52,7 @@ void main() {
 	// vec4 finalPosition = projectionMatrix * mvPosition;
 
   // gl_PointSize = 1.0 + 5.0 * rndz;
-  gl_PointSize = 5.0;
+  gl_PointSize = 10.0;
   // radius = 0.1 + rndz * 0.3;
   // vec4 finalPosition = modelViewMatrix * vec4(position, 1.0);
   // finalPosition.xyz += 0.6 * psize;

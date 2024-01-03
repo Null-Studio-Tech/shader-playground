@@ -4,8 +4,8 @@ import VertexShader from './shaders/ground.vert';
 import FragmentShader from './shaders/ground.frag';
 import SkyVertexShader from './shaders/sky.vert';
 import SkyFragmentShader from './shaders/sky.frag';
-import UpVertexShader from './shaders/up.vert';
-import UpFragmentShader from './shaders/up.frag';
+// import UpVertexShader from './shaders/up.vert';
+// import UpFragmentShader from './shaders/up.frag';
 import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { randomGaussian } from './utils/gaussian.utils';
 
@@ -196,15 +196,21 @@ const init = () => {
   upParticles.position.set(0, 0, 0);
   const [outerSkyParticles, outerSkyMaterial] = createSkyParticle(0.5);
   scene.add(outerSkyParticles);
-  outerSkyParticles.position.set(0, 0, 0.5);
+  outerSkyParticles.position.set(0.0, 1.2, 0.0);
   const [innerSkyParticles, innerSkyMaterial] = createSkyParticle(0.4);
   scene.add(innerSkyParticles);
-  innerSkyParticles.position.set(0, 0, 0.5);
+  innerSkyParticles.position.set(0.0, 1.2, 0.0);
   camera.position.setX(0);
   camera.position.setZ(5.5);
   camera.position.setY(1.1);
   camera.lookAt(0, 1.1, 0);
 
+
+  window.addEventListener("resize", () => {
+    camera.aspect = renderConfig.RENDER_ASPECT;
+    camera.updateProjectionMatrix();
+    renderer.setSize(renderConfig.RENDER_WIDTH, renderConfig.RENDER_HEIGHT);
+  })
 
   const control = new OrbitControls(camera, renderer.domElement);
   control.addEventListener('change', () => {
