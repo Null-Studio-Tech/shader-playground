@@ -77,16 +77,20 @@ const createGroundParticle: () => [THREE.Points, THREE.ShaderMaterial] = () => {
     uniforms: {
       'uTotal': { value: total },
       'uTime': { value: 0 },
-      'uMouse': { value: new THREE.Vector3(100, 100, 100) },
+      'uPixelRatio': { value: window.devicePixelRatio },
+      'uMouse': { value: new THREE.Vector3(10) }
     },
     vertexShader: VertexShader,
     fragmentShader: FragmentShader,
     depthTest: true,
+    depthWrite: false,
     transparent: true,
+    blending: THREE.AdditiveBlending,
     wireframe: false
   })
   return [new THREE.Points(particleGeometry, particleMaterial), particleMaterial];
 }
+
 
 const createUpParticle: () => [THREE.Points, THREE.ShaderMaterial] = () => {
   const width = 30;
@@ -98,6 +102,8 @@ const createUpParticle: () => [THREE.Points, THREE.ShaderMaterial] = () => {
   const size = new Float32Array(total);
   const angles = new Float32Array(total);
   const scales = new Float32Array(total);
+
+
 
   for (let i = 0, j = 0; i < total; i++) {
     size[i] = i;
@@ -129,7 +135,9 @@ const createUpParticle: () => [THREE.Points, THREE.ShaderMaterial] = () => {
     vertexShader: VertexShader,
     fragmentShader: FragmentShader,
     depthTest: true,
+    depthWrite: false,
     transparent: true,
+    blending: THREE.AdditiveBlending,
     wireframe: false
   })
   return [new THREE.Points(particleGeometry, particleMaterial), particleMaterial];
@@ -197,58 +205,55 @@ const init = () => {
   //const [innerSkyParticles, innerSkyMaterial] = createSkyParticle(0.4);
   //scene.add(innerSkyParticles);
   //innerSkyParticles.position.set(0, 0, 0.5);
-  camera.position.set(0, 1.1, 5.5);
+  camera.position.set(0, 0.95, 4);
   //camera.lookAt(0, 1.1, 0);
 
+  // const control = new OrbitControls(camera, renderer.domElement);
+  // control.addEventListener('change', () => {
+  //  renderer.render(scene, camera)
+  // })  const raycaster = new THREE.Raycaster();
+
+
+
+  // raycaster 扰动
+  // let containerRect = renderer.domElement.getBoundingClientRect();
+  // const raycaster = new THREE.Raycaster();
+  // const pointer = new THREE.Vector2();
+  // const planeGeo = new THREE.PlaneGeometry(3, 3);
+  // const virPlane = new THREE.Mesh(planeGeo, new THREE.MeshBasicMaterial({color:0x222222}));
+  // virPlane.position.set(0, 0, 0);
+
+  // renderer.domElement.addEventListener('pointermove', (e) => {
+  //   pointer.x = ((e.clientX + containerRect.x) / containerRect.width) * 2 - 1;
+  //   pointer.y = - ((e.clientY + containerRect.y) / containerRect.height) * 2 + 1;
+
+  //   raycaster.setFromCamera(pointer, camera);
+  //   const intersects = raycaster.intersectObject(virPlane);
+  //   if (intersects.length > 0) {
+  //     const intersect = intersects[0];
+  //     groundMaterial.uniforms.uMouse.value = intersect.point;
+  //   }
+  // })
+
   window.addEventListener("resize", () => {
-    console.log('render size', renderConfig.RENDER_WIDTH, renderConfig.RENDER_HEIGHT)
+    groundMaterial.uniforms.uPixelRatio.value = window.devicePixelRatio;
     renderer.setSize(renderConfig.RENDER_WIDTH, renderConfig.RENDER_HEIGHT)
     renderer.setPixelRatio(window.devicePixelRatio);
     camera.aspect = renderConfig.RENDER_ASPECT;
     camera.updateProjectionMatrix();
+    // containerRect = renderer.domElement.getBoundingClientRect();
   })
-  //const control = new OrbitControls(camera, renderer.domElement);
-  //control.addEventListener('change', () => {
-  //  renderer.render(scene, camera)
-  //})
-  const { x, y, width, height } = renderer.domElement.getBoundingClientRect();
-  const raycaster = new THREE.Raycaster();
-  const pointer = new THREE.Vector2();
-  const planeGeo = new THREE.Plane();
-  planeGeo.setFromNormalAndCoplanarPoint(camera.getWorldDirection(planeGeo.normal), groundParticles.position);
-  const virPlane = new THREE.Mesh(planeGeo,new THREE.MeshBasicMaterial());
-  const ball = new THREE.Mesh(new THREE.SphereGeometry(0.001), new THREE.PointsMaterial({ color: 0xff0000 }));
-  scene.add(ball);
-
-  renderer.domElement.addEventListener('pointermove', (e) => {
-    pointer.x = ((e.clientX + x) / width) * 2 - 1;
-    pointer.y = - ((e.clientY + y) / height) * 2 + 1;
-
-    raycaster.setFromCamera(pointer, camera);
-    const intersects = raycaster.intersectObjects([groundParticles], false);
-    if (intersects.length > 0) {
-      groundMaterial.uniforms.uMouse.value = intersects[0].point;
-      virPlane.setFromNormalAndCoplanarPoint(camera.getWorldDirection(virPlane.normal), intersects[0].object.position);
-      const [x, y, z] = intersects[0].point;
-      console.log(x,y,z)
-      ball.position.set(x, y, z);
-    }
-    // intersects.forEach(mesh => {
-    //   console.log(mesh.point);
-    // })
-  })
-
-
 
 
   renderer.render(scene, camera);
 
   const animate = () => {
-    const delta = clock.getDelta()
-    groundMaterial.uniforms.uTime.value += delta;
+    //const delta = clock.getDelta()
+    groundMaterial.uniforms.uTime.value = clock.getElapsedTime();
+    upMaterial.uniforms.uTime.value = clock.getElapsedTime();
     //outerSkyMaterial.uniforms.uTime.value += delta;
     //innerSkyMaterial.uniforms.uTime.value += delta;
-    upMaterial.uniforms.uTime.value += delta;
+    // control.update();
     renderer.render(scene, camera);
     requestAnimationFrame(animate)
   }
