@@ -9,6 +9,12 @@ import SkyFragmentShader from './shaders/sky.frag';
 // import { OrbitControls } from 'three/examples/jsm/Addons.js';
 import { randomGaussian } from './utils/gaussian.utils';
 
+import { EffectComposer } from 'three/addons/postprocessing/EffectComposer.js';
+import { RenderPass } from 'three/addons/postprocessing/RenderPass.js';
+import { BokehPass } from 'three/addons/postprocessing/BokehPass.js';
+import { OutputPass } from 'three/addons/postprocessing/OutputPass.js';
+
+
 const renderConfig = {
   get RENDER_WIDTH() { return window.innerWidth },
   get RENDER_HEIGHT() { return window.innerHeight },
@@ -16,7 +22,7 @@ const renderConfig = {
 }
 
 const createRender = () => {
-  const render = new THREE.WebGLRenderer({ antialias: true, alpha: true });
+  const render = new THREE.WebGLRenderer({ antialias: true, alpha: true, powerPreference: "high-performance" });
   render.setPixelRatio(window.devicePixelRatio);
   render.setSize(renderConfig.RENDER_WIDTH, renderConfig.RENDER_HEIGHT);
   return render;
@@ -216,7 +222,7 @@ const init = () => {
 
 
   // raycaster 扰动
-  // let containerRect = renderer.domElement.getBoundingClientRect();
+  let containerRect = renderer.domElement.getBoundingClientRect();
   // const raycaster = new THREE.Raycaster();
   // const pointer = new THREE.Vector2();
   // const planeGeo = new THREE.PlaneGeometry(3, 3);
@@ -235,17 +241,42 @@ const init = () => {
   //   }
   // })
 
+
+
+  // 后处理器
+  const renderPass = new RenderPass(scene, camera);
+  const bokehPass = new BokehPass(scene, camera, {
+    focus: 0,
+    aperture: 5*0.00001,
+    maxblur: 0.01
+  });
+  const outputPass = new OutputPass();
+  const composer = new EffectComposer(renderer);
+  composer.addPass(renderPass);
+  composer.addPass(bokehPass);
+  composer.addPass(outputPass);
+
+
+  renderer.domElement.addEventListener('pointermove', (e) => {
+    if (e.isPrimary === false) return;
+    const normalizeX = ((e.clientX + containerRect.x) / containerRect.width) * 2 - 1;
+    camera.setRotationFromAxisAngle(new THREE.Vector3(0, 1, 0), - Math.PI * normalizeX / 80);
+    (bokehPass.uniforms as { focus: { value: number } }).focus.value = (Math.abs(normalizeX)) * 200;
+  })
+
+
   window.addEventListener("resize", () => {
     groundMaterial.uniforms.uPixelRatio.value = window.devicePixelRatio;
     renderer.setSize(renderConfig.RENDER_WIDTH, renderConfig.RENDER_HEIGHT)
     renderer.setPixelRatio(window.devicePixelRatio);
     camera.aspect = renderConfig.RENDER_ASPECT;
     camera.updateProjectionMatrix();
-    // containerRect = renderer.domElement.getBoundingClientRect();
+    containerRect = renderer.domElement.getBoundingClientRect();
   })
 
 
-  renderer.render(scene, camera);
+  // renderer.render(scene, camera);
+  // composer.render();
 
   const animate = () => {
     //const delta = clock.getDelta()
@@ -254,7 +285,9 @@ const init = () => {
     //outerSkyMaterial.uniforms.uTime.value += delta;
     //innerSkyMaterial.uniforms.uTime.value += delta;
     // control.update();
-    renderer.render(scene, camera);
+    // renderer.render(scene, camera);
+    composer.render(clock.getElapsedTime());
+    // camera.rotateY(Math.sin(clock.getElapsedTime()/80) * Math.PI / 80);
     requestAnimationFrame(animate)
   }
 

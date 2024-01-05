@@ -1,5 +1,3 @@
-precision highp float;
-
 varying vec3 v_position;
 varying float radius;
 varying float v_color;

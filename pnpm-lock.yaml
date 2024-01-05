@@ -20,6 +20,9 @@ dependencies:
   gsap:
     specifier: ^3.12.4
     version: 3.12.4
+  postprocessing:
+    specifier: 6.34.1
+    version: 6.34.1(three@0.160.0)
   stats.js:
     specifier: ^0.17.0
     version: 0.17.0
@@ -1025,6 +1028,15 @@ packages:
       picocolors: 1.0.0
       source-map-js: 1.0.2
     dev: true
+
+  /postprocessing@6.34.1(three@0.160.0):
+    resolution: {integrity: sha512-xae6A2XNs61V3ohGHR+i9sQDvB4dWaoG/AICw0hg8sOYQWAYDlf+esWMRmO4hixMaYo3AJBJ9WAA7JF7OiGakw==}
+    engines: {node: '>= 0.13.2'}
+    peerDependencies:
+      three: '>= 0.138.0 < 0.161.0'
+    dependencies:
+      three: 0.160.0
+    dev: false
 
   /queue-microtask@1.2.3:
     resolution: {integrity: sha512-NuaNSa6flKT5JaSYQzJok04JzTL1CA6aGhv5rfLW3PgqA+M2ChpZQnAC8h8i4ZFkBS8X5RqkDBHA7r4hej3K9A==}
